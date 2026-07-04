@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bot, User, Send } from "lucide-react";
-import { procesarMensaje } from "@/lib/chatbot-engine";
+import { procesarMensaje, ESTADO_INICIAL, type ChatState } from "@/lib/chatbot-engine";
 
 interface Mensaje {
   autor: "bot" | "usuario";
@@ -28,6 +28,7 @@ const MENSAJE_BIENVENIDA: Mensaje = {
 
 export function ChatWidget() {
   const [mensajes, setMensajes] = useState<Mensaje[]>([MENSAJE_BIENVENIDA]);
+  const [estado, setEstado] = useState<ChatState>(ESTADO_INICIAL);
   const [input, setInput] = useState("");
   const finRef = useRef<HTMLDivElement>(null);
 
@@ -39,15 +40,19 @@ export function ChatWidget() {
     const limpio = texto.trim();
     if (!limpio) return;
 
-    const { respuesta } = procesarMensaje(limpio);
+    const { respuesta, nuevoEstado } = procesarMensaje(limpio, estado);
 
     setMensajes((prev) => [
+      
       ...prev,
+      
       { autor: "usuario", texto: limpio },
       { autor: "bot", texto: respuesta },
     ]);
+    setEstado(nuevoEstado);
     setInput("");
   }
+  
 
   return (
     <Card className="border-border/70 flex flex-col h-[560px]">
